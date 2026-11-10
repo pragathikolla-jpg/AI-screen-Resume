@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AI Resume Screener</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--tx:#1b1f2a;--mut:#667085;--bd:#e3e6ee;--ac:#4f46e5;--ok:#e6f6ec;--okt:#14703a;--no:#fdeaea;--not:#a12626;--wn:#fff4dc;--wnt:#8a5a00;--mk:#c9f1d6;--mx:#e8eaf3;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12141a;--card:#1b1e27;--tx:#eceef5;--mut:#9aa2b5;--bd:#2c3140;--ac:#818cf8;--ok:#173424;--okt:#7ee0a5;--no:#3a1c1c;--not:#f3a0a0;--wn:#3a2f12;--wnt:#f2cd7a;--mk:#1f5136;--mx:#2c3140}}
+:root[data-theme="dark"]{--bg:#12141a;--card:#1b1e27;--tx:#eceef5;--mut:#9aa2b5;--bd:#2c3140;--ac:#818cf8;--ok:#173424;--okt:#7ee0a5;--no:#3a1c1c;--not:#f3a0a0;--wn:#3a2f12;--wnt:#f2cd7a;--mk:#1f5136;--mx:#2c3140}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:18px 16px 56px}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+h1{font-size:23px;margin:0 0 2px}h2{font-size:16px;margin:0 0 8px}.sub{color:var(--mut);margin:0 0 16px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:16px}
+.steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.steps span{background:var(--card);border:1px solid var(--bd);border-radius:99px;padding:3px 12px;font-size:13px;color:var(--mut)}.steps b{color:var(--ac)}
+textarea,input[type=text]{width:100%;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:10px;font:inherit}
+textarea{min-height:120px;resize:vertical}
+button,.btn{background:var(--ac);color:#fff;border:0;border-radius:8px;padding:9px 16px;font:inherit;font-weight:600;cursor:pointer;display:inline-block}
+button.sec,.btn.sec{background:transparent;color:var(--ac);border:1px solid var(--bd)}button.sm{padding:4px 10px;font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+.cand{border:1px solid var(--bd);border-radius:10px;padding:10px;margin-top:10px}.cand textarea{min-height:80px;margin-top:6px}
+.drop{border:2px dashed var(--bd);border-radius:10px;padding:14px;text-align:center;color:var(--mut);margin-top:10px}.drop.on{border-color:var(--ac);background:var(--ok)}
+.chip{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12.5px;margin:2px 4px 2px 0}
+.ok{background:var(--ok);color:var(--okt)}.no{background:var(--no);color:var(--not)}.wn{background:var(--wn);color:var(--wnt)}.ne{background:var(--mx);color:var(--mut)}
+.req{background:var(--bg);border-radius:8px;padding:10px;margin-top:10px;font-size:14px}.req:empty{display:none}
+.wg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 18px;margin-top:8px}.wg label{font-size:13px;color:var(--mut);display:block}.wg input{width:100%;accent-color:var(--ac)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}.stat{background:var(--bg);border-radius:10px;padding:10px}.stat b{font-size:20px;display:block}.stat small{color:var(--mut)}
+.res{display:grid;grid-template-columns:44px 1fr 80px;gap:12px;align-items:start;padding:14px 0;border-top:1px solid var(--bd)}
+.rk{font-size:22px;font-weight:700;color:var(--ac)}.sc{font-size:24px;font-weight:700;text-align:right}
+.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%}
+.meta{color:var(--mut);font-size:13px}.lbl{font-size:12px;color:var(--mut);margin-top:6px}
+.view{white-space:pre-wrap;background:var(--bg);border-radius:8px;padding:10px;margin-top:8px;font-size:13.5px;max-height:260px;overflow:auto}
+mark.m{background:var(--mk);color:inherit;border-radius:3px;padding:0 2px}mark.x{background:var(--mx);color:inherit;border-radius:3px;padding:0 2px}
+</style>
+</head>
+<body>
+<main>
+<header><div><h1>📄 AI Resume Screener</h1><p class="sub">Paste a job description and resumes, then get a ranked shortlist. Runs fully in your browser; nothing is uploaded.</p></div><button class="sec sm" id="theme">🌓 Theme</button></header>
+<div class="steps"><span><b>1</b> Job description</span><span><b>2</b> Add resumes</span><span><b>3</b> Screen &amp; rank</span><span><b>4</b> Review &amp; export</span></div>
+
+<div class="card">
+<h2>1. Job description</h2>
+<textarea id="jd" placeholder="Paste the job description here…"></textarea>
+<div class="req" id="req"></div>
+</div>
+
+<div class="card">
+<h2>2. Resumes <span class="meta" id="cnt"></span></h2>
+<div id="cands"></div>
+<div class="drop" id="drop">Drag &amp; drop .txt resumes here, or use the buttons below</div>
+<div class="row">
+<button class="sec" id="add">+ Add resume</button>
+<label class="btn sec">Upload .txt files<input id="files" type="file" accept=".txt,.md" multiple hidden></label>
+<button class="sec" id="demo">Load sample data</button>
+<button class="sec" id="clear">Clear all</button>
+</div>
+</div>
+
+<div class="card">
+<h2>Scoring weights <span class="meta">(adjust to what matters for this role)</span></h2>
+<div class="wg" id="wg"></div>
+</div>
+
+<div class="row" style="margin:0 0 16px"><button id="go">🚀 Screen &amp; rank candidates</button></div>
+<div class="card" id="out" hidden></div>
+</main>
+
+<script>
+const SKILLS=["python","java","javascript","typescript","c++","c#","go","sql","mysql","postgresql","mongodb","html","css","react","angular","vue","node.js","express","django","flask","fastapi","spring boot","rest api","graphql","docker","kubernetes","aws","azure","gcp","git","linux","machine learning","deep learning","nlp","tensorflow","pytorch","scikit-learn","pandas","numpy","data structures","algorithms","data analysis","power bi","tableau","ci/cd","agile"];
+const EDU={phd:4,doctorate:4,master:3,"m.tech":3,mtech:3,"m.sc":3,mba:3,"m.e":3,bachelor:2,"b.tech":2,btech:2,"b.e":2,"b.sc":2,bca:2,diploma:1};
+const EDN=["not specified","Diploma","Bachelor's","Master's","PhD"];
+const W={skills:45,text:30,exp:15,edu:10},WL={skills:"Skills match",text:"Text similarity",exp:"Experience",edu:"Education"};
+const STOP=new Set("a an the and or of to in for with on at by is are was be as from that this it we you our your will have has can must should their they them not but also more such than into over about able work working role team".split(" "));
+const $=id=>document.getElementById(id),esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const re=s=>s.replace(/[.*+?^${}()|[\]\\\/]/g,"\\$&");
+const skillRe=s=>new RegExp("(?<![\\w+#])"+re(s)+"(?![\\w+#])","i");
+const skillsOf=t=>new Set(SKILLS.filter(s=>skillRe(s).test(t)));
+const yearsOf=t=>Math.max(0,...[...t.toLowerCase().matchAll(/(\d+(?:\.\d+)?)\+?\s*(?:years?|yrs?)/g)].map(m=>+m[1]));
+const eduOf=t=>{t=t.toLowerCase();return Math.max(0,...Object.entries(EDU).filter(([k])=>new RegExp("(?<![\\w.])"+re(k)).test(t)).map(([,v])=>v))};
+const ratio=(h,n)=>n===0?1:Math.min(h/n,1);
+const chips=(a,c)=>a.length?a.map(x=>`<span class="chip ${c}">${esc(x)}</span>`).join(""):'<span class="meta">none</span>';
+
+function terms(t){const w=(t.toLowerCase().match(/[a-z0-9+#.]+/g)||[]).map(x=>x.replace(/^\.+|\.+$/g,"")).filter(x=>x&&!STOP.has(x)),o=[...w];for(let i=0;i<w.length-1;i++)o.push(w[i]+" "+w[i+1]);return o}
+function tfidf(docs){const tk=docs.map(terms),N=docs.length,df={};tk.forEach(t=>new Set(t).forEach(k=>df[k]=(df[k]||0)+1));
+ return tk.map(t=>{const tf={};t.forEach(k=>tf[k]=(tf[k]||0)+1);const v={};let n=0;for(const k in tf){const x=(1+Math.log(tf[k]))*(Math.log((1+N)/(1+df[k]))+1);v[k]=x;n+=x*x}n=Math.sqrt(n)||1;for(const k in v)v[k]/=n;return v})}
+const cos=(a,b)=>{let s=0;for(const k in a)if(b[k])s+=a[k]*b[k];return s};
+
+function highlight(text,js){
+ const all=[...SKILLS].sort((a,b)=>b.length-a.length).map(re).join("|");
+ return esc(text).replace(new RegExp("(?<![\\w+#])("+all+")(?![\\w+#])","gi"),m=>`<mark class="${js.has(m.toLowerCase())?"m":"x"}">${m}</mark>`);
+}
+function screen(jd,cands){
+ const js=skillsOf(jd),jy=yearsOf(jd),je=eduOf(jd),vecs=tfidf([jd,...cands.map(c=>c.text)]);
+ const tot=Object.values(W).reduce((a,b)=>a+b,0)||1;
+ return cands.map((c,i)=>{
+  const s=skillsOf(c.text),m=[...s].filter(x=>js.has(x)),miss=[...js].filter(x=>!s.has(x)),extra=[...s].filter(x=>!js.has(x));
+  const sk=js.size?m.length/js.size:0,sim=cos(vecs[0],vecs[i+1]),y=yearsOf(c.text),e=eduOf(c.text);
+  const score=(W.skills*sk+W.text*Math.min(sim*2,1)+W.exp*ratio(y,jy)+W.edu*ratio(e,je))/tot*100;
+  return{name:c.name,text:c.text,score,sk:sk*100,sim:sim*100,y,e,m,miss,extra,js,jsz:js.size};
+ });
+}
+const fit=s=>s>=75?["Strong fit","ok","var(--okt)"]:s>=55?["Good fit","ok","var(--ac)"]:s>=35?["Partial fit","wn","#e0a100"]:["Low fit","no","var(--not)"];
+
+let n=0,last=[];
+function addCand(name="",text=""){n++;const d=document.createElement("div");d.className="cand";
+ d.innerHTML=`<div class="row" style="margin:0"><input type="text" value="${esc(name||"Candidate "+n)}"><button class="sec sm rm">Remove</button></div><textarea placeholder="Paste resume text…">${esc(text)}</textarea>`;
+ d.querySelector(".rm").onclick=()=>{d.remove();count()};$("cands").appendChild(d);count()}
+const count=()=>$("cnt").textContent="("+document.querySelectorAll(".cand").length+" added)";
+async function load(files){for(const f of files){if(/\.(txt|md)$/i.test(f.name))addCand(f.name.replace(/\.[^.]+$/,"").replace(/_/g," "),await f.text())}}
+$("add").onclick=()=>addCand();
+$("files").onchange=async e=>{await load(e.target.files);e.target.value=""};
+const dz=$("drop");["dragover","dragenter"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("on")}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("on")}));
+dz.addEventListener("drop",e=>load(e.dataTransfer.files));
+$("clear").onclick=()=>{$("cands").innerHTML="";$("jd").value="";$("out").hidden=true;n=0;req();count()};
+$("theme").onclick=()=>{const r=document.documentElement,d=r.dataset.theme==="dark"||(!r.dataset.theme&&matchMedia("(prefers-color-scheme:dark)").matches);r.dataset.theme=d?"light":"dark"};
+$("demo").onclick=()=>{
+ $("jd").value="Python Developer. 3+ years of experience building web applications. Required skills: Python, Flask, SQL, Docker, REST API, Git. Bachelor degree in computer science. Knowledge of AWS is a plus.";
+ $("cands").innerHTML="";n=0;
+ addCand("Asha","B.Tech Computer Science. 4 years experience as backend developer. Built REST API services with Python, Flask and PostgreSQL SQL databases. Deployed with Docker on AWS. Git workflow.");
+ addCand("Ravi","Bachelor degree. 1 year experience as Java developer. Spring Boot, MySQL, Git, HTML, CSS.");
+ addCand("Meena","M.Tech. 5 years experience. Python, Django, SQL, AWS, Git, data analysis with pandas.");req()};
+
+function req(){const t=$("jd").value.trim();if(!t){$("req").innerHTML="";return}
+ const s=[...skillsOf(t)],y=yearsOf(t),e=eduOf(t);
+ $("req").innerHTML=`<b>Detected requirements</b><div class="lbl">Skills (${s.length})</div>${chips(s,"ok")}<div class="lbl">Experience &amp; education</div><span class="chip ne">${y?y+"+ years":"experience not specified"}</span><span class="chip ne">${EDN[e]}</span>`}
+$("jd").addEventListener("input",req);
+
+$("wg").innerHTML=Object.keys(W).map(k=>`<div><label>${WL[k]}: <b id="w_${k}">${W[k]}%</b></label><input type="range" min="0" max="100" value="${W[k]}" data-k="${k}"></div>`).join("");
+$("wg").addEventListener("input",e=>{const k=e.target.dataset.k;if(k){W[k]=+e.target.value;$("w_"+k).textContent=W[k]+"%"}});
+
+function render(){
+ const min=+($("min")?.value||0),sort=$("sort")?.value||"score";
+ const r=last.filter(x=>x.score>=min).sort((a,b)=>sort==="score"?b.score-a.score:sort==="skills"?b.sk-a.sk:b.y-a.y);
+ $("list").innerHTML=r.length?r.map((x,i)=>{const f=fit(x.score);return `<div class="res"><div class="rk">#${i+1}</div><div>
+ <b>${esc(x.name)}</b> ${i===0&&sort==="score"?'<span class="chip wn">🏆 Top pick</span>':""}<span class="chip ${f[1]}">${f[0]}</span>
+ <div class="bar"><i style="width:${x.score.toFixed(0)}%;background:${f[2]}"></i></div>
+ <div class="meta">Skills ${x.sk.toFixed(0)}% (${x.m.length}/${x.jsz}) · Text similarity ${x.sim.toFixed(0)}% · ${x.y} yrs · ${EDN[x.e]}</div>
+ <div class="lbl">✅ Matched skills</div>${chips(x.m,"ok")}<div class="lbl">❌ Missing skills</div>${chips(x.miss,"no")}
+ ${x.extra.length?`<div class="lbl">➕ Extra skills</div>${chips(x.extra,"ne")}`:""}
+ <div class="row"><button class="sec sm tg">View resume with highlights</button></div><div class="view" hidden>${highlight(x.text,x.js)}</div></div>
+ <div class="sc" style="color:${f[2]}">${x.score.toFixed(1)}</div></div>`}).join(""):'<p class="meta">No candidates above this score.</p>';
+ document.querySelectorAll(".tg").forEach(b=>b.onclick=()=>{const v=b.closest(".res").querySelector(".view");v.hidden=!v.hidden});
+ $("mv").textContent=min+"+";
+}
+function csv(){const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+ const rows=[["Rank","Candidate","Score","Skill match %","Text similarity %","Years","Matched skills","Missing skills"],...[...last].sort((a,b)=>b.score-a.score).map((x,i)=>[i+1,x.name,x.score.toFixed(1),x.sk.toFixed(0),x.sim.toFixed(0),x.y,x.m.join("; "),x.miss.join("; ")])];
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(",")).join("\n")],{type:"text/csv"}));a.download="shortlist.csv";a.click()}
+
+$("go").onclick=()=>{
+ const jd=$("jd").value.trim(),cs=[...document.querySelectorAll(".cand")].map(d=>({name:d.querySelector("input").value.trim()||"Unnamed",text:d.querySelector("textarea").value.trim()})).filter(c=>c.text),o=$("out");o.hidden=false;
+ if(!jd||!cs.length){o.innerHTML="<p>⚠️ Please add a job description and at least one resume.</p>";return}
+ last=screen(jd,cs);const best=Math.max(...last.map(x=>x.score)),avg=last.reduce((a,x)=>a+x.score,0)/last.length,strong=last.filter(x=>x.score>=75).length;
+ o.innerHTML=`<h2>Ranked candidates</h2><div class="stats"><div class="stat"><b>${last.length}</b><small>Resumes screened</small></div><div class="stat"><b>${best.toFixed(1)}</b><small>Best score</small></div><div class="stat"><b>${avg.toFixed(1)}</b><small>Average score</small></div><div class="stat"><b>${strong}</b><small>Strong fits (75+)</small></div></div>
+ <div class="row" style="margin:0 0 6px"><label class="meta">Min score <b id="mv">0+</b> <input type="range" id="min" min="0" max="100" value="0"></label>
+ <select id="sort" style="background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:6px"><option value="score">Sort: overall score</option><option value="skills">Sort: skill match</option><option value="exp">Sort: experience</option></select>
+ <button class="sec sm" id="csv">⬇ Export CSV</button></div><div id="list"></div>
+ <p class="meta">A decision-support aid, not a final verdict. Always review shortlisted candidates yourself.</p>`;
+ $("min").oninput=render;$("sort").onchange=render;$("csv").onclick=csv;render();o.scrollIntoView({behavior:"smooth"});
+};
+addCand();
+</script>
+</body>
+</html>
